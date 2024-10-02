@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SidebarNav from "./SidebarNav";
 import SidebarToggle from "./SidebarToggle";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const MOBILE_WINDOW_WIDTH_LIMIT = 1024;
 
@@ -123,7 +124,14 @@ function Sidebar() {
             <SidebarNav isMobile={isMobile} isCollapsed={isCollapsed} />
           </div>
 
-          <div>{/* TODO: User profile from clerk */}</div>
+          <div>
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
           {!isMobile && (
             <SidebarToggle
               isCollapsed={isCollapsed}
