@@ -6,15 +6,17 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SidebarNav from "./SidebarNav";
 import SidebarToggle from "./SidebarToggle";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import UserProfileSection from "./UserProfileSection";
 
 const MOBILE_WINDOW_WIDTH_LIMIT = 1024;
 
 function Sidebar() {
-  const [isMobile, setIsMobile] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const { isSignedIn } = useUser();
+
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   //  Handle Resize
@@ -30,7 +32,6 @@ function Sidebar() {
     };
 
     handleResize();
-    setIsMounted(true);
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -68,10 +69,6 @@ function Sidebar() {
   const renderMenuIcon = (isOpen: boolean) => {
     return isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />;
   };
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div>
@@ -124,14 +121,9 @@ function Sidebar() {
             <SidebarNav isMobile={isMobile} isCollapsed={isCollapsed} />
           </div>
 
-          <div>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
+          {isSignedIn && (
+            <UserProfileSection isMobile={isMobile} isCollapsed={isCollapsed} />
+          )}
           {!isMobile && (
             <SidebarToggle
               isCollapsed={isCollapsed}
