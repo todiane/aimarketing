@@ -1,9 +1,5 @@
-import React from 'react'
+import React from "react";
 
-export default function loading() {
-  return (
-    <div>
-      
-    </div>
-  )
+export default function LoadingSettings() {
+  return <div>LoadingSettings</div>;
 }

@@ -1,9 +1,6 @@
-import React from 'react'
+import React from "react";
 
 export default function SettingsPage() {
-  return (
-    <div>
-      <h1>Settings Page</h1>
-    </div>
-  )
+  // TODO: Grab customer stripe data
+  return <div>SettingsPage</div>;
 }
