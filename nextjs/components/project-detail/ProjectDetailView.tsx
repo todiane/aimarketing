@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProjectDetailBody from "./ProjectDetailBody";
 
-const ManageUploadStep = lazy(() => import("../ManageUploadStep"));
+const ManageUploadStep = lazy(() => import("../upload-step/ManageUploadStep"));
 const ConfigurePromptsStep = lazy(() => import("../ConfigurePromptsStep"));
 const GenerateContentStep = lazy(() => import("../GenerateContentStep"));
 
