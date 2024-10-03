@@ -65,8 +65,6 @@ export async function POST(request: Request): Promise<NextResponse> {
             status: "created",
           });
         } catch (error) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const unusedError = error;
           throw new Error(
             "Could not save asset or asset processing job to database"
           );
