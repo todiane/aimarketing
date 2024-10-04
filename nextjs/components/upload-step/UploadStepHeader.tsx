@@ -1,27 +1,24 @@
 "use client";
 
 import { Upload } from "lucide-react";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "../ui/button";
+import { upload } from "@vercel/blob/client";
+import toast from "react-hot-toast";
 
 interface UploadStepHeaderProps {
-  setBrowserFiles: React.Dispatch<React.SetStateAction<File[]>>;
-  browserFiles: File[];
-  inputFileRef: React.RefObject<HTMLInputElement>;
-  handleUpload: () => Promise<void>;
-  uploading: boolean;
+  projectId: string;
 }
 
-const UploadStepHeader: React.FC<UploadStepHeaderProps> = ({
-  setBrowserFiles,
-  browserFiles,
-  inputFileRef,
-  handleUpload,
-  uploading,
-}) => {
+function UploadStepHeader({ projectId }: UploadStepHeaderProps) {
+  const [uploading, setUploading] = useState(false);
+  const [browserFiles, setBrowerFiles] = useState<File[]>([]);
+
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (e.dataTransfer.files) {
-      setBrowserFiles(Array.from(e.dataTransfer.files));
+      setBrowerFiles(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -33,7 +30,59 @@ const UploadStepHeader: React.FC<UploadStepHeaderProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setBrowserFiles(Array.from(e.target.files));
+      setBrowerFiles(Array.from(e.target.files));
+    }
+  };
+
+  const getFileType = (file: File) => {
+    if (file.type.startsWith("video/")) return "video";
+    if (file.type.startsWith("audio/")) return "audio";
+    if (file.type === "text/plain") return "text";
+    if (file.type === "text/markdown") return "markdown";
+    return "other";
+  };
+
+  const handleUpload = async () => {
+    // check if files are uploaded
+    setUploading(true);
+
+    try {
+      // upload files
+      const uploadPromises = browserFiles.map(async (file) => {
+        const fileData = {
+          projectId,
+          title: file.name,
+          fileType: getFileType(file),
+          mimeType: file.type,
+          size: file.size,
+        };
+
+        const filename = `${projectId}/${file.name}`;
+        const result = await upload(filename, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+          multipart: true,
+          clientPayload: JSON.stringify(fileData),
+        });
+
+        return result;
+      });
+
+      const uploadResults = await Promise.all(uploadPromises);
+
+      toast.success(`Successfully uploaded ${uploadResults.length} files`);
+      setBrowerFiles([]);
+      if (inputFileRef.current) {
+        inputFileRef.current.value = "";
+      }
+
+      // TODO: fetch files
+      // fetchFiles();
+    } catch (error) {
+      console.error("Error in upload process:", error);
+      toast.error("Failed to upload one or more files. Please try again.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -53,7 +102,6 @@ const UploadStepHeader: React.FC<UploadStepHeaderProps> = ({
           <div>
             <Upload className="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-main" />
             <input
-              title="File Input"
               type="file"
               accept=".mp4,.txt,.md,video/*,audio/*,text/plain,text/markdown"
               multiple
@@ -86,6 +134,6 @@ const UploadStepHeader: React.FC<UploadStepHeaderProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default UploadStepHeader;
