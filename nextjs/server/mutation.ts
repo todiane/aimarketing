@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "./db";
 import { projectsTable } from "./db/schema";
+import { redirect } from "next/navigation";
 
 export async function createProject() {
   //  Figure out who the user is
@@ -14,14 +15,13 @@ export async function createProject() {
   }
 
   // Create project in database
-  await db
-    .insert(projectsTable)
-    .values({
-      title: "New Project",
-      userId,
-    })
-    .returning();
+  const [newProject] = await db
+  .insert(projectsTable)
+  .values({
+    title: "New Project",
+    userId,
+  })
+  .returning();
 
-  // TODO: LATER - redirect to detail view
-  // redirect -> `/project/${newProject.id}`;
+redirect(`/project/${newProject.id}`);
 }
