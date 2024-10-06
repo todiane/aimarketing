@@ -31,7 +31,7 @@ export async function getProject(projectId: string) {
   if (!userId) {
     throw new Error("User not found");
   }
-
+  console.log('projectId', projectId);
   const project = await db.query.projectsTable.findFirst({
     where: (project, { eq, and }) =>
       and(eq(project.id, projectId), eq(project.userId, userId)),

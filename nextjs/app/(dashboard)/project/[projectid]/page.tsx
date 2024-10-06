@@ -10,6 +10,7 @@ interface ProjectPageProps {
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
+  console.log('ProjectPage', params);
   const project = await getProject(params.projectId);
   console.log('Project', project);
   if (!project) {
