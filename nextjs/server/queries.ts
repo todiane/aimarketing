@@ -26,7 +26,7 @@ export function getProjectsForUser(): Promise<Project[]> {
 export async function getProject(projectId: string) {
   // Figure out who the user is
   const { userId } = auth();
-
+  console.log('userId', userId);
   // Verify the user exists
   if (!userId) {
     throw new Error("User not found");
@@ -36,6 +36,6 @@ export async function getProject(projectId: string) {
     where: (project, { eq, and }) =>
       and(eq(project.id, projectId), eq(project.userId, userId)),
   });
-
+  console.log('project', project);
   return project;
 }
