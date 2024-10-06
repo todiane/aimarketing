@@ -5,13 +5,13 @@ import React from "react";
 
 interface ProjectPageProps {
   params: {
-    projectid: string;
+    projectId: string;
   };
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
   console.log('ProjectPage', params);
-  const project = await getProject(params.projectid);
+  const project = await getProject(params.projectId);
   console.log('Project', project);
   if (!project) {
     return notFound();
