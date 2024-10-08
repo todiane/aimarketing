@@ -7,10 +7,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+aiohttp = "^3.10.5"
 python-dotenv = "^1.0.1"
+pydantic = "^2.9.2"
 ffmpeg-python = "^0.2.0"
-openai = "^1.51.1"
-tiktoken = "^0.8.0"
+openai = "^1.47.0"
+tiktoken = "^0.7.0"
 
 [tool.poetry.scripts]
 asset-processing-service = "asset_processing_service.main:main"
