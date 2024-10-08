@@ -23,7 +23,7 @@ class Asset(BaseModel):
     fileType: str
     mimeType: str
     size: int
-    content: str
+    content: Optional[str]
     tokenCount: int
     createdAt: datetime
     updatedAt: datetime
