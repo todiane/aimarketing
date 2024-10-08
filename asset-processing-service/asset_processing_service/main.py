@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from asset_processing_service.api_client import fetch_jobs, update_job_details
 from asset_processing_service.config import config
+from asset_processing_service.job_processor import process_job
 
 async def job_fetcher(job_queue: asyncio.Queue, jobs_pending_or_in_progress: set):
     while True:
@@ -81,8 +82,6 @@ async def worker(
         except Exception as e:
             print(f"Error in worker {worker_id}: {e}")
             await asyncio.sleep(3)
-           
-       
 
 async def async_main():
     job_queue = asyncio.Queue()
@@ -99,7 +98,6 @@ async def async_main():
             job_locks)
         ) 
         for i in range(config.MAX_NUM_WORKERS)]
-
 
     await asyncio.gather(job_fetcher_task, *workers)
 

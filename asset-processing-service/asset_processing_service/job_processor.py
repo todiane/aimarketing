@@ -2,8 +2,8 @@
 
 import asyncio
 import os
-from asset_processing_service.api_client import fetch_asset, fetch_asset_file, update_job_heartbeat, update_job_details
-from asset_processing_service.media_processor import extract_audio_and_split, split_audio_file
+from asset_processing_service.api_client import fetch_asset, fetch_asset_file, update_asset_content, update_job_heartbeat, update_job_details
+from asset_processing_service.media_processor import extract_audio_and_split, split_audio_file, transcribe_chunks
 from asset_processing_service.models import AssetProcessingJob
 from asset_processing_service.config import config
 
@@ -48,21 +48,33 @@ async def process_job(job: AssetProcessingJob) -> None:
             )
             transcribed_chunks = await transcribe_chunks(chunks)
             content = "\n\n".join(transcribed_chunks)
-
         else:
             raise ValueError(f"Unsupported content type: {content_type}")
 
-        # TODO: update asset content
+        # update asset content
+        await update_asset_content(asset.id, content)
 
-        # TODO: Update job status to completed
-
-        # TODO: Cancel heartbeat updater
-
+        #  Update job status to completed
+        await update_job_details(job.id, {"status": "completed"})
 
     except Exception as e:
-        pass
+        print(f"Error processing job {job.id}: {e}")
+        error_message = str(e)
+        await update_job_details(
+            job.id,
+            {
+                "status": "failed",
+                "errorMessage": error_message,
+                "attempts": job.attempts + 1,
+            },
+        )
 
-    
+    finally:
+        heartbeat_task.cancel()
+        try:
+            await heartbeat_task
+        except asyncio.CancelledError:
+            pass
 
 
 async def heeatbeat_updater(job_id: str):

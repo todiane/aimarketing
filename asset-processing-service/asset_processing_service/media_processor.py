@@ -2,9 +2,12 @@ import asyncio
 import os
 import shutil
 import tempfile
+from typing import List
 import uuid
 import ffmpeg
+import openai
 
+from asset_processing_service.config import config
 
 async def split_audio_file(audio_buffer: bytes, max_chunk_size_bytes: int, original_file_name: str):
     file_name_without_ext, file_extension = os.path.splitext(original_file_name)
@@ -166,3 +169,69 @@ async def extract_audio_and_split(video_buffer: bytes, max_chunk_size_bytes: int
         # Clean up temporary files
         shutil.rmtree(temp_dir)
     
+
+"""
+{
+    "data": chunk_data,
+    "size": chunk_size,
+    "file_name": chunk_file_name,
+}
+"""
+
+async def transcribe_chunks(chunks: List[dict]) -> List[str]:
+
+    async def transcribe_chunk(index: int, chunk: dict) -> dict:
+        try:
+            print(
+                f"Starting transcription for chunk {index}: {chunk['file_name']}"
+            )
+            temp_file_path = os.path.join(os.getcwd(), "temp", chunk["file_name"])
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+
+            # Write chunk data to a temporary file
+            with open(temp_file_path, "wb") as f:
+                f.write(chunk["data"])
+            print(f"Chunk {index} written to temporary file: {temp_file_path}")
+
+            # Open the temporary file for reading
+            with open(temp_file_path, "rb") as audio_file:
+                # Call OpenAI's asynchronous transcription method
+                transcription = await openai.Audio.atranscribe(
+                    model=config.OPENAI_MODEL, file=audio_file
+                )
+            print(
+                f"Transcription completed for chunk {index}: {chunk['file_name']}"
+            )
+
+            # Remove the temporary file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+            print(f"Temporary file removed for chunk {index}: {temp_file_path}")
+
+            return {
+                "index": index,
+                "content": transcription["text"],
+            }
+
+        except Exception as e:
+            print(f"Error transcribing chunk {index}: {e}")
+            raise
+
+
+    print("Starting transcription of audio chunks.")
+    tasks = [transcribe_chunk(index, chunk) for index, chunk in enumerate(chunks)]
+
+    transcribed_chunks = await asyncio.gather(*tasks)
+    print("all transcribed")
+
+    # Sort the transcribed chunks based on their original indices to maintain order
+    transcribed_chunks.sort(key=lambda x: x["index"])
+    print("Transcribed chunks sorted by original indices.")
+
+     # Extract the 'content' from the sorted results
+    transcribed_texts = [chunk["content"] for chunk in transcribed_chunks]
+    print("Transcription content extracted from transcribed chunks.")
+
+    return transcribed_texts
+
+
