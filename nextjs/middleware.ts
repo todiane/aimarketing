@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher(["/", "/pricing", "/api/upload"]);
 
-const isSecureRoute = createRouteMatcher(["/api/asset-processing-job"]);
+const isSecureRoute = createRouteMatcher([
+  "/api/asset-processing-job",
+  "/api/asset",
+]);
 
 const SERVER_API_KEY = process.env.SERVER_API_KEY;
 
