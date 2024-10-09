@@ -1,5 +1,3 @@
-
-
 import asyncio
 import os
 from asset_processing_service.api_client import fetch_asset, fetch_asset_file, update_asset_content, update_job_heartbeat, update_job_details

@@ -23,7 +23,7 @@ export default function ProjectNotFound() {
         </p>
         <Link href="/projects" passHref>
           <Button className="transition-colors text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
-            Back to Projects
+            Go Back to Projects
           </Button>
         </Link>
       </div>
