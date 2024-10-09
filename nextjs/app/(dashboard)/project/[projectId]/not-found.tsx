@@ -18,12 +18,12 @@ export default function ProjectNotFound() {
           Oops! Project Not Found
         </h1>
         <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8">
-          We couldn&apos;t find the project you&apos;re looking for. It may have
+          We couldn&apos;t find the project you are looking for. It may have
           been removed, renamed, or doesn&apos;t exist.
         </p>
         <Link href="/projects" passHref>
           <Button className="transition-colors text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
-            Back to Projects
+            GoBack to Projects
           </Button>
         </Link>
       </div>

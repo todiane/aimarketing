@@ -23,7 +23,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${poppins.variable} font-sans`}>{children}</body>
+      <body className={`${poppins.variable} font-sans bg-background text-foreground`}>{children}</body>
+
       </html>
     </ClerkProvider>
   );
