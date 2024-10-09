@@ -1,80 +1,99 @@
 import { db } from "@/server/db";
-import { assetProcessingJobTable, assetTable } from "@/server/db/schema";
-import { auth } from "@clerk/nextjs/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { NextResponse } from "next/server";
+import { assetProcessingJobTable } from "@/server/db/schema";
+import { eq, inArray } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
+const updateAssetJobSchema = z.object({
+  status: z
+    .enum([
+      "created",
+      "in_progress",
+      "failed",
+      "completed",
+      "max_attempts_exceeded",
+    ])
+    .optional(),
+  errorMessage: z.string().optional(),
+  attempts: z.number().optional(),
+  lastHeartBeat: z.string().optional(),
+});
+
+export async function GET() {
+  console.log("Fetching asset processing job that are not in a terminal state");
 
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const { userId } = auth();
-        if (!userId) {
-          return {};
-        }
+    const availableJobs = await db
+      .select()
+      .from(assetProcessingJobTable)
+      .where(
+        inArray(
+          assetProcessingJobTable.status,
+          // non-terminal states
+          ["created", "failed", "in_progress"]
+        )
+      )
+      .execute();
 
-        return {
-          allowedContentTypes: [
-            "video/mp4",
-            "video/quicktime",
-            "audio/mpeg",
-            "audio/wav",
-            "audio/ogg",
-            "text/plain",
-            "text/markdown",
-          ],
-          maximumSizeInBytes: 5 * 1024 * 1024 * 1024, // 5GB
-          tokenPayload: clientPayload,
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        if (!tokenPayload) return;
-
-        const { projectId, fileType, mimeType, size } =
-          JSON.parse(tokenPayload);
-
-        console.log(
-          `Saving blob URL ${blob.url} to database for project ${projectId} with filename ${blob.pathname}`
-        );
-
-        try {
-          const [newAsset] = await db
-            .insert(assetTable)
-            .values({
-              projectId,
-              title: blob.pathname.split("/").pop() || blob.pathname,
-              fileName: blob.pathname,
-              fileUrl: blob.url,
-              fileType,
-              mimeType,
-              size,
-            })
-            .returning();
-
-          await db.insert(assetProcessingJobTable).values({
-            assetId: newAsset.id,
-            projectId,
-            status: "created",
-          });
-        } catch (error) {
-          console.error("Database error:", error); // Log the error
-          throw new Error(
-            `Could not save asset or asset processing job to database: ${(error as Error).message}`
-          );
-        }
-      },
-    });
-
-    return NextResponse.json(jsonResponse);
+    return NextResponse.json(availableJobs);
   } catch (error) {
-    console.error("Upload error:", error); // Log the error
+    console.error("Error fetching asset processing jobs", error);
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 } // The webhook will retry 5 times waiting for a 200
+      { error: "Error fetching asset processing jobs" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const jobId = searchParams.get("jobId");
+
+    if (!jobId) {
+      return NextResponse.json(
+        { error: "Missing jobId parameter" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const validationResult = updateAssetJobSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid request body",
+          errors: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { status, errorMessage, attempts, lastHeartBeat } =
+      validationResult.data;
+
+    const updatedJob = await db
+      .update(assetProcessingJobTable)
+      .set({
+        status,
+        errorMessage,
+        attempts,
+        lastHeartBeat: lastHeartBeat ? new Date(lastHeartBeat) : undefined,
+      })
+      .where(eq(assetProcessingJobTable.id, jobId))
+      .returning();
+
+    if (updatedJob.length === 0) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedJob[0]);
+  } catch (error) {
+    console.error("Error updating asset processing job", error);
+    return NextResponse.json(
+      { error: "Error updating asset processing job" },
+      { status: 500 }
     );
   }
 }
