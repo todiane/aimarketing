@@ -7,7 +7,6 @@ from asset_processing_service.config import config
 from asset_processing_service.logger import logger
 
 
-
 async def process_job(job: AssetProcessingJob) -> None:
     logger.info(f"Processing job {job.id}...")
 

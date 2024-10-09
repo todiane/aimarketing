@@ -61,9 +61,8 @@ export async function POST(request: Request): Promise<NextResponse> {
             status: "created",
           });
         } catch (error) {
-          console.error("Database error:", error); // Log the error
           throw new Error(
-            `Could not save asset or asset processing job to database: ${(error as Error).message}`
+            "Could not save asset or asset processing job to database"
           );
         }
       },
@@ -71,7 +70,6 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
-    console.error("Upload error:", error); // Log the error
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 400 } // The webhook will retry 5 times waiting for a 200
