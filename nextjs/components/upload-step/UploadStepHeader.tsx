@@ -57,8 +57,6 @@ function UploadStepHeader({
               accept=".mp4,.txt,.md,video/*,audio/*,text/plain,text/markdown"
               multiple
               className="hidden"
-              title="Upload your files"
-              placeholder="Select files to upload"
               onChange={handleFileChange}
               ref={inputFileRef}
             />
