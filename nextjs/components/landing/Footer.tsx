@@ -16,7 +16,7 @@ const Footer = () => {
           </div>
           <div className="flex items-center space-x-4">
             <a
-              href="https://x.com/bhancock_ai"
+              href="https://x.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-primary active:text-white focus:text-white transition-colors"
@@ -25,7 +25,7 @@ const Footer = () => {
               <FaXTwitter size={20} />
             </a>
             <a
-              href="https://www.youtube.com/@bhancock_ai"
+              href="https://www.youtube.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-primary active:text-white focus:text-white transition-colors"

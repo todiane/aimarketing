@@ -36,7 +36,7 @@ function SubscriptionManager({ subscription }: SubscriptionManagerProps) {
       router.replace("/settings"); // Replace to remove query parameters
     } else if (canceled === "true") {
       toast.error(
-        "Subscription canceled. If you change your mind, feel free to subscribe later!"
+        "Subscription cancelled. If you change your mind, feel free to subscribe later!"
       );
       router.replace("/settings"); // Replace to remove query parameters
     }
@@ -163,7 +163,7 @@ function SubscriptionBody({
           disabled={isLoading}
           className="w-full sm:w-auto mt-4 sm:mt-6"
         >
-          {isLoading ? "Processing..." : "Subscribe Now - $14.99"}
+          {isLoading ? "Processing..." : "Subscribe Now - £14.99"}
         </Button>
       </div>
     </div>
