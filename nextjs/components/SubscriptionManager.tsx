@@ -36,7 +36,7 @@ function SubscriptionManager({ subscription }: SubscriptionManagerProps) {
       router.replace("/settings"); // Replace to remove query parameters
     } else if (canceled === "true") {
       toast.error(
-        "Subscription cancelled. If you change your mind, feel free to subscribe later!"
+        "Subscription canceled. If you change your mind, feel free to subscribe later!"
       );
       router.replace("/settings"); // Replace to remove query parameters
     }
